@@ -1,4 +1,4 @@
-package com.github.siom79.opentelemetry.test.collector.grpc;
+package com.github.siom79.opentelemetry.test.collector.adapters.otel.grpc;
 
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsPartialSuccess;

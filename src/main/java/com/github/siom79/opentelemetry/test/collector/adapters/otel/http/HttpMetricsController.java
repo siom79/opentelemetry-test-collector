@@ -1,4 +1,4 @@
-package com.github.siom79.opentelemetry.test.collector.http;
+package com.github.siom79.opentelemetry.test.collector.adapters.otel.http;
 
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsPartialSuccess;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
