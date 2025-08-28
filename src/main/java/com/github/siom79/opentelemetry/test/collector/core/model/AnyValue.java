@@ -1,5 +1,6 @@
 package com.github.siom79.opentelemetry.test.collector.core.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AnyValue {
 
     public enum Type {
@@ -22,7 +24,7 @@ public class AnyValue {
 
     private Type type;
     private String stringValue;
-    private boolean booleanValue;
+    private Boolean booleanValue;
     private Long integerValue;
     private Double doubleValue;
     private byte[] byteValue;

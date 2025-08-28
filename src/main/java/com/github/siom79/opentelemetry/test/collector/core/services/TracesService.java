@@ -15,7 +15,11 @@ public class TracesService {
         traces.addAll(resourceSpans);
     }
 
-    public List<ResourceSpans> getResourceSpans() {
+    public synchronized List<ResourceSpans> getResourceSpans() {
         return traces;
+    }
+
+    public synchronized void clear() {
+        traces.clear();
     }
 }
