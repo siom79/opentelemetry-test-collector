@@ -29,6 +29,14 @@ Afterward you can run the server with:
 
 ## Usage
 
+### Docker Container
+
+A docker container is available through:
+
+```bash
+docker pull ghcr.io/siom79/opentelemetry-test-collector:main
+```
+
 ### OpenAPI
 
 The following OpenAPI document shows the currently implemented API. As the implementation
