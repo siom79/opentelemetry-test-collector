@@ -12,3 +12,14 @@ springdoc:
   api-docs:
     path: /api-docs
 
+com:
+  github:
+    siom79:
+      opentelemetry-test-collector:
+        traces:
+          cache:
+            size: ${TRACES_CACHE_SIZE:1000}
+        metrics:
+          cache:
+            size: ${METRICS_CACHE_SIZE:1000}
+

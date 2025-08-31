@@ -1,22 +1,25 @@
 package com.github.siom79.opentelemetry.test.collector.core.services;
 
 import com.github.siom79.opentelemetry.test.collector.core.model.traces.ResourceSpans;
+import com.google.common.collect.EvictingQueue;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class TracesService {
 
-    private final List<ResourceSpans> traces = new ArrayList<>();
+    @Value("${com.github.siom79.opentelemetry-test-collector.traces.cache.size}")
+    private int cacheSize;
+    private final EvictingQueue<ResourceSpans> traces = EvictingQueue.create(cacheSize);
 
-    public void addResourceSpans(List<ResourceSpans> resourceSpans) {
+    public synchronized void addResourceSpans(List<ResourceSpans> resourceSpans) {
         traces.addAll(resourceSpans);
     }
 
     public synchronized List<ResourceSpans> getResourceSpans() {
-        return traces;
+        return traces.stream().toList();
     }
 
     public synchronized void clear() {
