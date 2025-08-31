@@ -148,3 +148,10 @@ curl --request GET \
               },
             ...
 ```
+
+The following one clears the traces cache (e.g. before another test case):
+
+```bash
+curl --request POST \
+  --url http://localhost:4318/api/traces/clear
+```
