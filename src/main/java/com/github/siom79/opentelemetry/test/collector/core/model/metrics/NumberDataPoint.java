@@ -10,10 +10,10 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Metric {
-    private String name;
-    private String description;
-    private String unit;
-    private Data data;
-    private List<KeyValue> metadata;
+public class NumberDataPoint {
+    private List<KeyValue> attributes;
+    private long startTimeUnixNano;
+    private long timeUnixNano;
+    private Number value;
+    private int flags;
 }
