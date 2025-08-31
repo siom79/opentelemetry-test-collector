@@ -1,6 +1,6 @@
 package com.github.siom79.opentelemetry.test.collector.adapters.otel;
 
-import com.github.siom79.opentelemetry.test.collector.core.model.*;
+import com.github.siom79.opentelemetry.test.collector.core.model.traces.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +10,7 @@ import static com.github.siom79.opentelemetry.test.collector.core.util.HexUtils.
 
 @Slf4j
 @Service
-public class ModelMapper {
+public class TracesModelMapper {
 
     public ResourceSpans mapResourceSpans(io.opentelemetry.proto.trace.v1.ResourceSpans input) {
         return ResourceSpans.builder()

@@ -1,4 +1,4 @@
-package com.github.siom79.opentelemetry.test.collector.core.model;
+package com.github.siom79.opentelemetry.test.collector.core.model.traces;
 
 import lombok.*;
 
@@ -9,9 +9,9 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class InstrumentationScope {
+public class Event {
+    private long timeUnixNano;
     private String name;
-    private String version;
     private List<KeyValue> attributes;
     private int droppedAttributesCount;
 }

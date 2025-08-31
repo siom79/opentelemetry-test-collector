@@ -1,5 +1,7 @@
 package com.github.siom79.opentelemetry.test.collector.adapters.otel.http;
 
+import com.github.siom79.opentelemetry.test.collector.adapters.otel.MetricsModelMapper;
+import com.github.siom79.opentelemetry.test.collector.core.services.MetricsService;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsPartialSuccess;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
@@ -14,6 +16,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HttpMetricsController {
 
+    private final MetricsService metricsService;
+    private final MetricsModelMapper modelMapper;
+
+    public HttpMetricsController(MetricsService metricsService,
+                                 MetricsModelMapper modelMapper) {
+        this.metricsService = metricsService;
+        this.modelMapper = modelMapper;
+    }
+
     @PostMapping(
             value = "/v1/metrics",
             consumes = "application/x-protobuf",
@@ -21,6 +32,7 @@ public class HttpMetricsController {
     )
     public ExportMetricsServiceResponse exportMetrics(@RequestBody ExportMetricsServiceRequest request) {
         log.info("HTTP Metrics request: {}", request);
+        metricsService.addMetrics(request.getResourceMetricsList().stream().map(modelMapper::map).toList());
         return ExportMetricsServiceResponse.newBuilder()
                 .setPartialSuccess(ExportMetricsPartialSuccess.newBuilder()
                         .build())

@@ -1,6 +1,6 @@
 package com.github.siom79.opentelemetry.test.collector.adapters.otel.http;
 
-import com.github.siom79.opentelemetry.test.collector.adapters.otel.ModelMapper;
+import com.github.siom79.opentelemetry.test.collector.adapters.otel.TracesModelMapper;
 import com.github.siom79.opentelemetry.test.collector.core.services.TracesService;
 import io.opentelemetry.proto.collector.trace.v1.ExportTracePartialSuccess;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class HttpTracesController {
 
     private final TracesService tracesService;
-    private final ModelMapper modelMapper;
+    private final TracesModelMapper tracesModelMapper;
 
     public HttpTracesController(TracesService tracesService,
-                                ModelMapper modelMapper) {
+                                TracesModelMapper tracesModelMapper) {
         this.tracesService = tracesService;
-        this.modelMapper = modelMapper;
+        this.tracesModelMapper = tracesModelMapper;
     }
 
     @PostMapping(
@@ -32,7 +32,7 @@ public class HttpTracesController {
     )
     public ExportTraceServiceResponse exportTraces(@RequestBody ExportTraceServiceRequest request) {
         log.info("HTTP Traces request: {}", request);
-        tracesService.addResourceSpans(request.getResourceSpansList().stream().map(modelMapper::mapResourceSpans).toList());
+        tracesService.addResourceSpans(request.getResourceSpansList().stream().map(tracesModelMapper::mapResourceSpans).toList());
         return ExportTraceServiceResponse.newBuilder()
                 .setPartialSuccess(ExportTracePartialSuccess.newBuilder()
                         .build())

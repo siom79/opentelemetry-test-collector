@@ -50,22 +50,31 @@ info:
     \ collector"
   version: 1.0.0
 servers:
-- url: http://localhost:4318
-  description: Generated server url
+  - url: http://localhost:4318
+    description: Generated server url
 paths:
   /api/traces/clear:
     post:
       tags:
-      - api-traces-controller
+        - api-traces-controller
       summary: Clears the list of all captured traces
       operationId: clear
       responses:
         "200":
           description: The list has been cleared
+  /api/metrics/clear:
+    post:
+      tags:
+        - api-metrics-controller
+      summary: Clears the list of all captured metrics
+      operationId: clear_1
+      responses:
+        "200":
+          description: The list has been metrics
   /api/traces/list:
     get:
       tags:
-      - api-traces-controller
+        - api-traces-controller
       summary: Returns a list of all captured traces
       operationId: list
       responses:
@@ -77,6 +86,21 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ResourceSpans"
+  /api/metrics/list:
+    get:
+      tags:
+        - api-metrics-controller
+      summary: Returns a list of all captured metrics
+      operationId: list_1
+      responses:
+        "200":
+          description: Returns the list of metrics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResourceMetrics"
 ```
 
 The OpenAPI document is accessible through the URL `http://localhost:4318/api-docs.yaml`.

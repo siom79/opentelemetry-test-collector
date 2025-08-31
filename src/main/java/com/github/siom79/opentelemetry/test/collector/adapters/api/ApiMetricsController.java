@@ -1,6 +1,8 @@
 package com.github.siom79.opentelemetry.test.collector.adapters.api;
 
+import com.github.siom79.opentelemetry.test.collector.core.model.metrics.ResourceMetrics;
 import com.github.siom79.opentelemetry.test.collector.core.model.traces.ResourceSpans;
+import com.github.siom79.opentelemetry.test.collector.core.services.MetricsService;
 import com.github.siom79.opentelemetry.test.collector.core.services.TracesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,30 +18,30 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/traces")
-public class ApiTracesController {
+@RequestMapping("/api/metrics")
+public class ApiMetricsController {
 
-    private final TracesService tracesService;
+    private final MetricsService metricsService;
 
-    public ApiTracesController(TracesService tracesService) {
-        this.tracesService = tracesService;
+    public ApiMetricsController(MetricsService metricsService) {
+        this.metricsService = metricsService;
     }
 
-    @Operation(summary = "Returns a list of all captured traces")
+    @Operation(summary = "Returns a list of all captured metrics")
     @ApiResponses(
-            @ApiResponse(responseCode = "200", description = "Returns the list of traces")
+            @ApiResponse(responseCode = "200", description = "Returns the list of metrics")
     )
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ResourceSpans> list() {
-        return tracesService.getResourceSpans();
+    public List<ResourceMetrics> list() {
+        return metricsService.getMetrics();
     }
 
-    @Operation(summary = "Clears the list of all captured traces")
+    @Operation(summary = "Clears the list of all captured metrics")
     @ApiResponses(
-            @ApiResponse(responseCode = "200", description = "The list has been cleared")
+            @ApiResponse(responseCode = "200", description = "The list has been metrics")
     )
     @PostMapping(value = "/clear")
     public void clear() {
-        tracesService.clear();
+        metricsService.clear();
     }
 }

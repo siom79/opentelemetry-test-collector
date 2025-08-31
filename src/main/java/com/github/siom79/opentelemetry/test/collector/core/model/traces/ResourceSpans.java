@@ -1,4 +1,4 @@
-package com.github.siom79.opentelemetry.test.collector.core.model;
+package com.github.siom79.opentelemetry.test.collector.core.model.traces;
 
 import lombok.*;
 

@@ -1,6 +1,6 @@
 package com.github.siom79.opentelemetry.test.collector.core.services;
 
-import com.github.siom79.opentelemetry.test.collector.core.model.ResourceSpans;
+import com.github.siom79.opentelemetry.test.collector.core.model.traces.ResourceSpans;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
