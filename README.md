@@ -39,12 +39,12 @@ docker pull ghcr.io/siom79/opentelemetry-test-collector:main
 
 The following environment variables can be set:
 
-| Environment variable | Default value | Description                    |
-|----------------------|---------------|--------------------------------|
-| HTTP_SERVER_PORT     | 4317          | Port des HTTP/Protobuf-Servers |
-| GRPC_SERVER_PORT     | 4318          | Port des GRPC-Server           |
-| TRACES_CACHE_SIZE    | 1000          | Size of the traces cache       |
-| METRICS_CACHE_SIZE   | 1000          | Size of the metrics cache      |
+| Environment variable | Default value | Description                      |
+|----------------------|---------------|----------------------------------|
+| HTTP_SERVER_PORT     | 4317          | Port of the HTTP/Protobuf server |
+| GRPC_SERVER_PORT     | 4318          | Port of the GRPC server          |
+| TRACES_CACHE_SIZE    | 1000          | Size of the traces cache         |
+| METRICS_CACHE_SIZE   | 1000          | Size of the metrics cache        |
 
 ### OpenAPI
 
