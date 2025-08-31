@@ -1,5 +1,6 @@
 package com.github.siom79.opentelemetry.test.collector.core.model.traces;
 
+import com.github.siom79.opentelemetry.test.collector.core.model.resource.Resource;
 import lombok.*;
 
 import java.util.List;

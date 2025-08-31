@@ -1,5 +1,6 @@
 package com.github.siom79.opentelemetry.test.collector.adapters.otel;
 
+import com.github.siom79.opentelemetry.test.collector.core.model.common.InstrumentationScope;
 import com.github.siom79.opentelemetry.test.collector.core.model.traces.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -12,10 +13,19 @@ import static com.github.siom79.opentelemetry.test.collector.core.util.HexUtils.
 @Service
 public class TracesModelMapper {
 
+    private final ResourceModelMapper resourceModelMapper;
+    private final CommonModelMapper commonModelMapper;
+
+    public TracesModelMapper(ResourceModelMapper resourceModelMapper,
+                             CommonModelMapper commonModelMapper) {
+        this.resourceModelMapper = resourceModelMapper;
+        this.commonModelMapper = commonModelMapper;
+    }
+
     public ResourceSpans mapResourceSpans(io.opentelemetry.proto.trace.v1.ResourceSpans input) {
         return ResourceSpans.builder()
                 .schemaUrl(input.getSchemaUrl())
-                .resource(mapResource(input.getResource()))
+                .resource(this.resourceModelMapper.mapResource(input.getResource()))
                 .scopeSpans(mapScopeSpans(input.getScopeSpansList()))
                 .build();
     }
@@ -27,12 +37,7 @@ public class TracesModelMapper {
     private ScopeSpans mapScopeSpans(io.opentelemetry.proto.trace.v1.ScopeSpans s) {
         return ScopeSpans.builder()
                 .schemaUrl(s.getSchemaUrl())
-                .scope(InstrumentationScope.builder()
-                                        .name(s.getScope().getName())
-                                        .version(s.getScope().getVersion())
-                                        .attributes(mapKeyValueList(s.getScope().getAttributesList()))
-                                        .droppedAttributesCount(s.getScope().getDroppedAttributesCount())
-                                        .build())
+                .scope(this.commonModelMapper.mapInstrumentationScope(s.getScope()))
                 .spans(mapSpans(s.getSpansList()))
                 .build();
     }
@@ -49,7 +54,7 @@ public class TracesModelMapper {
                         .spanKind(mapSpanKind(s.getKind()))
                         .startTimeUnixMano(s.getStartTimeUnixNano())
                         .endTimeUnixNano(s.getEndTimeUnixNano())
-                        .attributes(mapKeyValueList(s.getAttributesList()))
+                        .attributes(this.commonModelMapper.mapKeyValueList(s.getAttributesList()))
                         .droppedAttributesCount(s.getDroppedAttributesCount())
                         .events(mapEvents(s.getEventsList()))
                         .droppedEventsCount(s.getDroppedEventsCount())
@@ -88,7 +93,7 @@ public class TracesModelMapper {
                 .map(e -> Event.builder()
                         .timeUnixNano(e.getTimeUnixNano())
                         .name(e.getName())
-                        .attributes(mapKeyValueList(e.getAttributesList()))
+                        .attributes(this.commonModelMapper.mapKeyValueList(e.getAttributesList()))
                         .droppedAttributesCount(e.getDroppedAttributesCount())
                         .build())
                 .toList();
@@ -115,59 +120,6 @@ public class TracesModelMapper {
                 log.warn("Unsupported span kind: {}", kind);
                 return null;
             }
-        }
-    }
-
-    private Resource mapResource(io.opentelemetry.proto.resource.v1.Resource resource) {
-        return Resource.builder()
-                .droppedAttributesCount(resource.getDroppedAttributesCount())
-                .attributes(mapKeyValueList(resource.getAttributesList()))
-                .build();
-    }
-
-    private List<KeyValue> mapKeyValueList(List<io.opentelemetry.proto.common.v1.KeyValue> attributesList) {
-        return attributesList.stream()
-                .map(a -> KeyValue.builder()
-                        .key(a.getKey())
-                        .value(mapAnyValue(a.getValue()))
-                        .build())
-                .toList();
-    }
-
-    private AnyValue mapAnyValue(io.opentelemetry.proto.common.v1.AnyValue anyValue) {
-        if (anyValue.hasBoolValue()) {
-            return AnyValue.builder()
-                    .type(AnyValue.Type.BOOLEAN)
-                    .booleanValue(anyValue.getBoolValue())
-                    .build();
-        } else if (anyValue.hasBytesValue()) {
-            return AnyValue.builder()
-                    .type(AnyValue.Type.BYTE)
-                    .byteValue(anyValue.getBytesValue().asReadOnlyByteBuffer().array())
-                    .build();
-        } else if (anyValue.hasDoubleValue()) {
-            return AnyValue.builder()
-                    .type(AnyValue.Type.DOUBLE)
-                    .doubleValue(anyValue.getDoubleValue())
-                    .build();
-        } else if (anyValue.hasIntValue()) {
-            return AnyValue.builder()
-                    .type(AnyValue.Type.INT)
-                    .integerValue(anyValue.getIntValue())
-                    .build();
-        } else if (anyValue.hasStringValue()) {
-            return AnyValue.builder()
-                    .type(AnyValue.Type.STRING)
-                    .stringValue(anyValue.getStringValue())
-                    .build();
-        } else if (anyValue.hasKvlistValue()) {
-            return AnyValue.builder()
-                    .type(AnyValue.Type.KVLIST)
-                    .kvList(mapKeyValueList(anyValue.getKvlistValue().getValuesList()))
-                    .build();
-        } else {
-            log.warn("Unsupported AnyValue type: {}", anyValue);
-            return null;
         }
     }
 }

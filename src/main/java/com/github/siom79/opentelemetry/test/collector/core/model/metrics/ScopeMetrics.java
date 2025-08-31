@@ -1,6 +1,6 @@
 package com.github.siom79.opentelemetry.test.collector.core.model.metrics;
 
-import com.github.siom79.opentelemetry.test.collector.core.model.resource.Resource;
+import com.github.siom79.opentelemetry.test.collector.core.model.common.InstrumentationScope;
 import lombok.*;
 
 import java.util.List;
@@ -10,8 +10,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResourceMetrics {
-    private Resource resource;
-    private List<ScopeMetrics> scopeMetrics;
+public class ScopeMetrics {
+    private InstrumentationScope instrumentationScope;
+    private List<Metric> metrics;
     private String schemaUrl;
 }

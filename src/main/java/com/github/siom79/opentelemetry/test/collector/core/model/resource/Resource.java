@@ -1,5 +1,6 @@
-package com.github.siom79.opentelemetry.test.collector.core.model.traces;
+package com.github.siom79.opentelemetry.test.collector.core.model.resource;
 
+import com.github.siom79.opentelemetry.test.collector.core.model.common.KeyValue;
 import lombok.*;
 
 import java.util.ArrayList;

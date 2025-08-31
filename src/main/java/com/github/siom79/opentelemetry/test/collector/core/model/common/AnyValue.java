@@ -1,4 +1,4 @@
-package com.github.siom79.opentelemetry.test.collector.core.model.traces;
+package com.github.siom79.opentelemetry.test.collector.core.model.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
