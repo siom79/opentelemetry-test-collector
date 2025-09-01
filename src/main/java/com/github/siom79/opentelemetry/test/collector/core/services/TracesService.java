@@ -2,6 +2,7 @@ package com.github.siom79.opentelemetry.test.collector.core.services;
 
 import com.github.siom79.opentelemetry.test.collector.core.model.traces.ResourceSpans;
 import com.google.common.collect.EvictingQueue;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,12 @@ public class TracesService {
 
     @Value("${com.github.siom79.opentelemetry-test-collector.traces.cache.size}")
     private int cacheSize;
-    private final EvictingQueue<ResourceSpans> traces = EvictingQueue.create(cacheSize);
+    private EvictingQueue<ResourceSpans> traces;
+
+    @PostConstruct
+    public void postConstruct() {
+        traces = EvictingQueue.create(cacheSize);
+    }
 
     public synchronized void addResourceSpans(List<ResourceSpans> resourceSpans) {
         traces.addAll(resourceSpans);

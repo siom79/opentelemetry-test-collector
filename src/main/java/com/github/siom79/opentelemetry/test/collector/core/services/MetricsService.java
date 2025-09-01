@@ -2,6 +2,7 @@ package com.github.siom79.opentelemetry.test.collector.core.services;
 
 import com.github.siom79.opentelemetry.test.collector.core.model.metrics.ResourceMetrics;
 import com.google.common.collect.EvictingQueue;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,12 @@ public class MetricsService {
 
     @Value("${com.github.siom79.opentelemetry-test-collector.metrics.cache.size}")
     private int cacheSize;
-    private final EvictingQueue<ResourceMetrics> metrics = EvictingQueue.create(cacheSize);
+    private EvictingQueue<ResourceMetrics> metrics;
+
+    @PostConstruct
+    public void postConstruct() {
+        metrics = EvictingQueue.create(cacheSize);
+    }
 
     public synchronized void addMetrics(List<ResourceMetrics> resourceSpans) {
         metrics.addAll(resourceSpans);

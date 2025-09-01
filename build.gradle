@@ -45,6 +45,8 @@ dependencies {
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.grpc:spring-grpc-test'
+    testImplementation 'io.opentelemetry:opentelemetry-sdk'
+    testImplementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
