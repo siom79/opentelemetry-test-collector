@@ -15,6 +15,7 @@ import lombok.experimental.SuperBuilder;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Gauge.class, name = "gauge"),
         @JsonSubTypes.Type(value = Sum.class, name = "sum"),
+        @JsonSubTypes.Type(value = Histogram.class, name = "histogram")
 })
 public class Data {
 }
