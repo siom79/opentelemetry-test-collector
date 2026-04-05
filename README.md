@@ -41,15 +41,14 @@ The following environment variables can be set:
 
 | Environment variable | Default value | Description                      |
 |----------------------|---------------|----------------------------------|
-| HTTP_SERVER_PORT     | 4317          | Port of the HTTP/Protobuf server |
-| GRPC_SERVER_PORT     | 4318          | Port of the GRPC server          |
+| HTTP_SERVER_PORT     | 4318          | Port of the HTTP/Protobuf server |
+| GRPC_SERVER_PORT     | 4317          | Port of the GRPC server          |
 | TRACES_CACHE_SIZE    | 1000          | Size of the traces cache         |
 | METRICS_CACHE_SIZE   | 1000          | Size of the metrics cache        |
 
 ### OpenAPI
 
-The following OpenAPI document shows the currently implemented API. As the implementation
-is far from being finished, some operations still are missing.
+The following OpenAPI document shows the currently implemented API.
 
 ```yaml
 openapi: 3.0.1
@@ -79,7 +78,7 @@ paths:
       operationId: clear_1
       responses:
         "200":
-          description: The list has been metrics
+          description: The metrics list has been cleared
   /api/traces/list:
     get:
       tags:
@@ -114,6 +113,12 @@ paths:
 
 The OpenAPI document is accessible through the URL `http://localhost:4318/api-docs.yaml`.
 
+An interactive Swagger UI is available at `http://localhost:4318/swagger-ui.html`.
+
+### Health Check
+
+The application exposes a health endpoint at `http://localhost:4318/actuator/health`, which can be used as a liveness/readiness probe in Docker or Kubernetes deployments.
+
 ### Examples
 
 The following request returns all captured traces:
@@ -138,7 +143,7 @@ curl --request GET \
             "flags": 257,
             "name": "http get /test",
             "spanKind": "SPAN_KIND_SERVER",
-            "startTimeUnixMano": 1756412455705140500,
+            "startTimeUnixNano": 1756412455705140500,
             "endTimeUnixNano": 1756412455706545000,
             "attributes": [
               {
