@@ -10,11 +10,23 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class NumberDataPoint {
+public class SummaryDataPoint {
+
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ValueAtQuantile {
+        private double quantile;
+        private double value;
+    }
+
     private List<KeyValue> attributes;
     private long startTimeUnixNano;
     private long timeUnixNano;
-    private Number value;
-    private List<Exemplar> exemplars;
+    private long count;
+    private double sum;
+    private List<ValueAtQuantile> quantileValues;
     private int flags;
 }

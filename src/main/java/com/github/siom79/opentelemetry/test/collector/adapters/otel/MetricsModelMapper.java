@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.github.siom79.opentelemetry.test.collector.core.util.HexUtils.bytesToHex;
+
 @Slf4j
 @Service
 public class MetricsModelMapper {
@@ -64,12 +66,24 @@ public class MetricsModelMapper {
                 return Sum.builder()
                         .dataPoints(mapDataPoints(metric.getSum().getDataPointsList()))
                         .aggregationTemporality(mapAggregationTemporality(metric.getSum().getAggregationTemporality()))
+                        .isMonotonic(metric.getSum().getIsMonotonic())
                         .build();
             }
             case HISTOGRAM -> {
                 return Histogram.builder()
                         .dataPoints(mapHistogramDataPoints(metric.getHistogram().getDataPointsList()))
                         .aggregationTemporality(mapAggregationTemporality(metric.getHistogram().getAggregationTemporality()))
+                        .build();
+            }
+            case EXPONENTIAL_HISTOGRAM -> {
+                return ExponentialHistogram.builder()
+                        .dataPoints(mapExponentialHistogramDataPoints(metric.getExponentialHistogram().getDataPointsList()))
+                        .aggregationTemporality(mapAggregationTemporality(metric.getExponentialHistogram().getAggregationTemporality()))
+                        .build();
+            }
+            case SUMMARY -> {
+                return Summary.builder()
+                        .dataPoints(mapSummaryDataPoints(metric.getSummary().getDataPointsList()))
                         .build();
             }
         }
@@ -102,6 +116,7 @@ public class MetricsModelMapper {
                         .count(dp.getCount())
                         .bucketCounts(dp.getBucketCountsList())
                         .explicitBounds(dp.getExplicitBoundsList())
+                        .exemplars(mapExemplars(dp.getExemplarsList()))
                         .startTimeUnixNano(dp.getStartTimeUnixNano())
                         .timeUnixNano(dp.getTimeUnixNano())
                         .flags(dp.getFlags())
@@ -116,9 +131,88 @@ public class MetricsModelMapper {
                         .attributes(this.commonModelMapper.mapKeyValueList(dp.getAttributesList()))
                         .startTimeUnixNano(dp.getStartTimeUnixNano())
                         .timeUnixNano(dp.getTimeUnixNano())
+                        .exemplars(mapExemplars(dp.getExemplarsList()))
                         .flags(dp.getFlags())
                         .build())
                 .toList();
+    }
+
+    private List<ExponentialHistogramDataPoint> mapExponentialHistogramDataPoints(
+            List<io.opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint> dataPointsList) {
+        return dataPointsList.stream()
+                .map(dp -> ExponentialHistogramDataPoint.builder()
+                        .attributes(this.commonModelMapper.mapKeyValueList(dp.getAttributesList()))
+                        .startTimeUnixNano(dp.getStartTimeUnixNano())
+                        .timeUnixNano(dp.getTimeUnixNano())
+                        .count(dp.getCount())
+                        .sum(dp.hasSum() ? dp.getSum() : null)
+                        .scale(dp.getScale())
+                        .zeroCount(dp.getZeroCount())
+                        .positive(mapBuckets(dp.getPositive()))
+                        .negative(mapBuckets(dp.getNegative()))
+                        .flags(dp.getFlags())
+                        .exemplars(mapExemplars(dp.getExemplarsList()))
+                        .min(dp.hasMin() ? dp.getMin() : null)
+                        .max(dp.hasMax() ? dp.getMax() : null)
+                        .zeroThreshold(dp.getZeroThreshold())
+                        .build())
+                .toList();
+    }
+
+    private ExponentialHistogramDataPoint.Buckets mapBuckets(
+            io.opentelemetry.proto.metrics.v1.ExponentialHistogramDataPoint.Buckets buckets) {
+        return ExponentialHistogramDataPoint.Buckets.builder()
+                .offset(buckets.getOffset())
+                .bucketCounts(buckets.getBucketCountsList())
+                .build();
+    }
+
+    private List<SummaryDataPoint> mapSummaryDataPoints(List<io.opentelemetry.proto.metrics.v1.SummaryDataPoint> dataPointsList) {
+        return dataPointsList.stream()
+                .map(dp -> SummaryDataPoint.builder()
+                        .attributes(this.commonModelMapper.mapKeyValueList(dp.getAttributesList()))
+                        .startTimeUnixNano(dp.getStartTimeUnixNano())
+                        .timeUnixNano(dp.getTimeUnixNano())
+                        .count(dp.getCount())
+                        .sum(dp.getSum())
+                        .quantileValues(mapQuantileValues(dp.getQuantileValuesList()))
+                        .flags(dp.getFlags())
+                        .build())
+                .toList();
+    }
+
+    private List<SummaryDataPoint.ValueAtQuantile> mapQuantileValues(
+            List<io.opentelemetry.proto.metrics.v1.SummaryDataPoint.ValueAtQuantile> quantileValuesList) {
+        return quantileValuesList.stream()
+                .map(qv -> SummaryDataPoint.ValueAtQuantile.builder()
+                        .quantile(qv.getQuantile())
+                        .value(qv.getValue())
+                        .build())
+                .toList();
+    }
+
+    private List<Exemplar> mapExemplars(List<io.opentelemetry.proto.metrics.v1.Exemplar> exemplarsList) {
+        return exemplarsList.stream()
+                .map(e -> Exemplar.builder()
+                        .filteredAttributes(this.commonModelMapper.mapKeyValueList(e.getFilteredAttributesList()))
+                        .timeUnixNano(e.getTimeUnixNano())
+                        .value(mapExemplarValue(e))
+                        .spanId(bytesToHex(e.getSpanId().toByteArray()))
+                        .traceId(bytesToHex(e.getTraceId().toByteArray()))
+                        .build())
+                .toList();
+    }
+
+    private Number mapExemplarValue(io.opentelemetry.proto.metrics.v1.Exemplar e) {
+        switch (e.getValueCase()) {
+            case AS_INT -> {
+                return e.getAsInt();
+            }
+            case AS_DOUBLE -> {
+                return e.getAsDouble();
+            }
+        }
+        return null;
     }
 
     private Number mapValue(io.opentelemetry.proto.metrics.v1.NumberDataPoint dp) {
