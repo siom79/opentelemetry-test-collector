@@ -169,3 +169,88 @@ The following one clears the traces cache (e.g. before another test case):
 curl --request POST \
   --url http://localhost:4318/api/traces/clear
 ```
+
+### Testcontainers Integration
+
+The test collector can be used in integration tests via [Testcontainers](https://testcontainers.com/) to verify that your Spring Boot application correctly exports metrics and traces.
+
+#### Example: Verifying Traces
+
+The following example starts the test collector as a Testcontainer, configures the OpenTelemetry SDK to export to it, and asserts that a specific span was captured:
+
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Testcontainers
+class TracesExportIT {
+
+    @Container
+    static GenericContainer<?> collector = new GenericContainer<>(
+            "ghcr.io/siom79/opentelemetry-test-collector:main")
+        .withExposedPorts(4317, 4318)
+        .waitingFor(Wait.forHttp("/actuator/health")
+            .forPort(4318)
+            .forStatusCode(200));
+
+    @DynamicPropertySource
+    static void otelProperties(DynamicPropertyRegistry registry) {
+        String endpoint = "http://localhost:" + collector.getMappedPort(4318);
+        registry.add("otel.exporter.otlp.endpoint", () -> endpoint);
+        registry.add("otel.traces.exporter", () -> "otlp");
+    }
+
+    @Test
+    void myEndpoint_shouldExportSpan() throws Exception {
+        // given
+        String collectorBaseUrl = "http://localhost:" + collector.getMappedPort(4318);
+        RestClient restClient = RestClient.create(collectorBaseUrl);
+        restClient.post().uri("/api/traces/clear").retrieve().toBodilessEntity();
+
+        // when — call the endpoint under test
+        // restTemplate.getForEntity("/my-endpoint", String.class);
+
+        // then — verify the span was exported
+        await().atMost(10, SECONDS).untilAsserted(() -> {
+            List<Map<String, Object>> traces = restClient.get()
+                .uri("/api/traces/list")
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+
+            assertThat(traces).isNotEmpty();
+            assertThat(traces.getFirst())
+                .extracting("scopeSpans")
+                .asList()
+                .isNotEmpty();
+        });
+    }
+}
+```
+
+#### Example: Verifying Metrics
+
+```java
+@Test
+void myService_shouldExportGaugeMetric() {
+    String collectorBaseUrl = "http://localhost:" + collector.getMappedPort(4318);
+    RestClient restClient = RestClient.create(collectorBaseUrl);
+    restClient.post().uri("/api/metrics/clear").retrieve().toBodilessEntity();
+
+    // trigger metric recording in the application under test
+
+    await().atMost(15, SECONDS).untilAsserted(() -> {
+        List<Map<String, Object>> metrics = restClient.get()
+            .uri("/api/metrics/list")
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+
+        assertThat(metrics).isNotEmpty();
+
+        List<?> scopeMetrics = (List<?>) ((Map<?, ?>) metrics.getFirst()).get("scopeMetrics");
+        List<?> metricList = (List<?>) ((Map<?, ?>) scopeMetrics.getFirst()).get("metrics");
+
+        assertThat(metricList).anySatisfy(m -> {
+            Map<?, ?> metric = (Map<?, ?>) m;
+            assertThat(metric.get("name")).isEqualTo("my.gauge.metric");
+        });
+    });
+}
+```
