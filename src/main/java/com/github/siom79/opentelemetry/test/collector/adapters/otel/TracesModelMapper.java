@@ -9,6 +9,7 @@ import java.util.List;
 
 import static com.github.siom79.opentelemetry.test.collector.core.util.HexUtils.bytesToHex;
 
+
 @Slf4j
 @Service
 public class TracesModelMapper {
@@ -52,12 +53,14 @@ public class TracesModelMapper {
                         .flags(s.getFlags())
                         .name(s.getName())
                         .spanKind(mapSpanKind(s.getKind()))
-                        .startTimeUnixMano(s.getStartTimeUnixNano())
+                        .startTimeUnixNano(s.getStartTimeUnixNano())
                         .endTimeUnixNano(s.getEndTimeUnixNano())
                         .attributes(this.commonModelMapper.mapKeyValueList(s.getAttributesList()))
                         .droppedAttributesCount(s.getDroppedAttributesCount())
                         .events(mapEvents(s.getEventsList()))
                         .droppedEventsCount(s.getDroppedEventsCount())
+                        .links(mapLinks(s.getLinksList()))
+                        .droppedLinksCount(s.getDroppedLinksCount())
                         .status(mapStatus(s.getStatus()))
                         .build())
                 .toList();
@@ -86,6 +89,19 @@ public class TracesModelMapper {
                 return null;
             }
         }
+    }
+
+    private List<Link> mapLinks(List<io.opentelemetry.proto.trace.v1.Span.Link> linksList) {
+        return linksList.stream()
+                .map(l -> Link.builder()
+                        .traceId(bytesToHex(l.getTraceId().toByteArray()))
+                        .spanId(bytesToHex(l.getSpanId().toByteArray()))
+                        .traceState(l.getTraceState())
+                        .attributes(this.commonModelMapper.mapKeyValueList(l.getAttributesList()))
+                        .droppedAttributesCount(l.getDroppedAttributesCount())
+                        .flags(l.getFlags())
+                        .build())
+                .toList();
     }
 
     private List<Event> mapEvents(List<io.opentelemetry.proto.trace.v1.Span.Event> eventsList) {

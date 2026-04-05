@@ -10,11 +10,10 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class NumberDataPoint {
-    private List<KeyValue> attributes;
-    private long startTimeUnixNano;
+public class Exemplar {
+    private List<KeyValue> filteredAttributes;
     private long timeUnixNano;
     private Number value;
-    private List<Exemplar> exemplars;
-    private int flags;
+    private String spanId;
+    private String traceId;
 }

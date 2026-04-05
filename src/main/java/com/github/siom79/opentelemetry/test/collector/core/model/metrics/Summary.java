@@ -11,8 +11,6 @@ import java.util.List;
 @Setter
 @SuperBuilder
 @AllArgsConstructor
-public class Sum extends Data {
-    private List<NumberDataPoint> dataPoints;
-    private AggregationTemporality aggregationTemporality;
-    private boolean isMonotonic;
+public class Summary extends Data {
+    private List<SummaryDataPoint> dataPoints;
 }

@@ -11,8 +11,7 @@ import java.util.List;
 @Setter
 @SuperBuilder
 @AllArgsConstructor
-public class Sum extends Data {
-    private List<NumberDataPoint> dataPoints;
+public class ExponentialHistogram extends Data {
+    private List<ExponentialHistogramDataPoint> dataPoints;
     private AggregationTemporality aggregationTemporality;
-    private boolean isMonotonic;
 }

@@ -29,11 +29,13 @@ public class Span {
     private int flags;
     private String name;
     private SpanKind spanKind;
-    private long startTimeUnixMano;
+    private long startTimeUnixNano;
     private long endTimeUnixNano;
     private List<KeyValue> attributes;
     private long droppedAttributesCount;
     private List<Event> events;
     private long droppedEventsCount;
+    private List<Link> links;
+    private long droppedLinksCount;
     private Status status;
 }
