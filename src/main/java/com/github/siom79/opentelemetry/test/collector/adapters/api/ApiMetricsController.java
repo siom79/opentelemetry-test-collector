@@ -1,20 +1,20 @@
 package com.github.siom79.opentelemetry.test.collector.adapters.api;
 
-import com.github.siom79.opentelemetry.test.collector.core.model.metrics.ResourceMetrics;
-import com.github.siom79.opentelemetry.test.collector.core.model.traces.ResourceSpans;
-import com.github.siom79.opentelemetry.test.collector.core.services.MetricsService;
-import com.github.siom79.opentelemetry.test.collector.core.services.TracesService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.github.siom79.opentelemetry.test.collector.core.model.metrics.ResourceMetrics;
+import com.github.siom79.opentelemetry.test.collector.core.services.MetricsService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -38,7 +38,7 @@ public class ApiMetricsController {
 
     @Operation(summary = "Clears the list of all captured metrics")
     @ApiResponses(
-            @ApiResponse(responseCode = "200", description = "The list has been metrics")
+            @ApiResponse(responseCode = "200", description = "The metrics list has been cleared")
     )
     @PostMapping(value = "/clear")
     public void clear() {
