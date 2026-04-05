@@ -1,12 +1,14 @@
 package com.github.siom79.opentelemetry.test.collector.adapters.otel;
 
-import com.github.siom79.opentelemetry.test.collector.core.model.metrics.*;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import static com.github.siom79.opentelemetry.test.collector.core.util.HexUtils.bytesToHex;
 
 import java.util.List;
 
-import static com.github.siom79.opentelemetry.test.collector.core.util.HexUtils.bytesToHex;
+import org.springframework.stereotype.Service;
+
+import com.github.siom79.opentelemetry.test.collector.core.model.metrics.*;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -86,8 +88,11 @@ public class MetricsModelMapper {
                         .dataPoints(mapSummaryDataPoints(metric.getSummary().getDataPointsList()))
                         .build();
             }
+            default -> {
+                log.warn("Unsupported metric data type: {}", metric.getDataCase());
+                return null;
+            }
         }
-        return null;
     }
 
     private AggregationTemporality mapAggregationTemporality(io.opentelemetry.proto.metrics.v1.AggregationTemporality aggregationTemporality) {
@@ -211,8 +216,11 @@ public class MetricsModelMapper {
             case AS_DOUBLE -> {
                 return e.getAsDouble();
             }
+            default -> {
+                log.warn("Unsupported exemplar value type: {}", e.getValueCase());
+                return null;
+            }
         }
-        return null;
     }
 
     private Number mapValue(io.opentelemetry.proto.metrics.v1.NumberDataPoint dp) {
@@ -223,7 +231,10 @@ public class MetricsModelMapper {
             case AS_DOUBLE -> {
                 return dp.getAsDouble();
             }
+            default -> {
+                log.warn("Unsupported number data point value type: {}", dp.getValueCase());
+                return null;
+            }
         }
-        return null;
     }
 }
