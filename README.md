@@ -13,6 +13,11 @@ expected by querying the provided REST API.
 Since it also logs all incoming requests, it can additionally be used to 
 inspect the OpenTelemetry requests sent by your application.
 
+It can optionally act as a **proxy**: all incoming OTLP requests are stored
+in-memory as usual *and* forwarded to a configurable upstream collector.
+This allows you to place the test collector between your application and a
+real collector without interrupting the data flow.
+
 ## Build & Run
 
 After cloning the Git repository, you can build the server using the following command:
@@ -39,12 +44,51 @@ docker pull ghcr.io/siom79/opentelemetry-test-collector:main
 
 The following environment variables can be set:
 
-| Environment variable | Default value | Description                      |
-|----------------------|---------------|----------------------------------|
-| HTTP_SERVER_PORT     | 4318          | Port of the HTTP/Protobuf server |
-| GRPC_SERVER_PORT     | 4317          | Port of the GRPC server          |
-| TRACES_CACHE_SIZE    | 1000          | Size of the traces cache         |
-| METRICS_CACHE_SIZE   | 1000          | Size of the metrics cache        |
+| Environment variable | Default value | Description                                                                 |
+|----------------------|---------------|-----------------------------------------------------------------------------|
+| HTTP_SERVER_PORT     | 4318          | Port of the HTTP/Protobuf server                                            |
+| GRPC_SERVER_PORT     | 4317          | Port of the GRPC server                                                     |
+| TRACES_CACHE_SIZE    | 1000          | Size of the traces cache                                                    |
+| METRICS_CACHE_SIZE   | 1000          | Size of the metrics cache                                                   |
+| PROXY_ENDPOINT       | *(empty)*     | Upstream collector URL. When set, all requests are forwarded to this target |
+
+### Proxy Mode
+
+Setting `PROXY_ENDPOINT` enables proxy mode. Every incoming OTLP request is
+first stored in-memory (as usual) and then forwarded to the configured
+upstream collector. The protocol is determined by the URL scheme:
+
+| `PROXY_ENDPOINT` value       | Forwarding protocol |
+|------------------------------|---------------------|
+| `http://upstream-host:4318`  | HTTP/Protobuf OTLP  |
+| `grpc://upstream-host:4317`  | gRPC OTLP           |
+
+Forwarding errors are logged as warnings but do not affect the response
+returned to the original sender. The test collector remains fully functional
+even if the upstream is temporarily unavailable.
+
+#### Docker Compose example
+
+```yaml
+services:
+  test-collector:
+    image: ghcr.io/siom79/opentelemetry-test-collector:main
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      PROXY_ENDPOINT: http://real-collector:4318
+
+  real-collector:
+    image: otel/opentelemetry-collector:latest
+    ports:
+      - "14317:4317"
+      - "14318:4318"
+```
+
+With this setup your application sends telemetry to the test collector
+(e.g. for verification in tests) while all data is transparently forwarded
+to the real collector.
 
 ### OpenAPI
 
