@@ -2,6 +2,7 @@ package com.github.siom79.opentelemetry.test.collector.adapters.otel.http;
 
 import com.github.siom79.opentelemetry.test.collector.adapters.otel.MetricsModelMapper;
 import com.github.siom79.opentelemetry.test.collector.core.services.MetricsService;
+import com.github.siom79.opentelemetry.test.collector.core.services.ProxyService;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsPartialSuccess;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
@@ -18,11 +19,14 @@ public class HttpMetricsController {
 
     private final MetricsService metricsService;
     private final MetricsModelMapper modelMapper;
+    private final ProxyService proxyService;
 
     public HttpMetricsController(MetricsService metricsService,
-                                 MetricsModelMapper modelMapper) {
+                                 MetricsModelMapper modelMapper,
+                                 ProxyService proxyService) {
         this.metricsService = metricsService;
         this.modelMapper = modelMapper;
+        this.proxyService = proxyService;
     }
 
     @PostMapping(
@@ -33,6 +37,7 @@ public class HttpMetricsController {
     public ExportMetricsServiceResponse exportMetrics(@RequestBody ExportMetricsServiceRequest request) {
         log.info("HTTP Metrics request: {}", request);
         metricsService.addMetrics(request.getResourceMetricsList().stream().map(modelMapper::map).toList());
+        proxyService.forwardMetrics(request);
         return ExportMetricsServiceResponse.newBuilder()
                 .setPartialSuccess(ExportMetricsPartialSuccess.newBuilder()
                         .build())
