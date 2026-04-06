@@ -1,6 +1,7 @@
 package com.github.siom79.opentelemetry.test.collector.adapters.otel.http;
 
 import com.github.siom79.opentelemetry.test.collector.adapters.otel.TracesModelMapper;
+import com.github.siom79.opentelemetry.test.collector.core.services.ProxyService;
 import com.github.siom79.opentelemetry.test.collector.core.services.TracesService;
 import io.opentelemetry.proto.collector.trace.v1.ExportTracePartialSuccess;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
@@ -18,11 +19,14 @@ public class HttpTracesController {
 
     private final TracesService tracesService;
     private final TracesModelMapper tracesModelMapper;
+    private final ProxyService proxyService;
 
     public HttpTracesController(TracesService tracesService,
-                                TracesModelMapper tracesModelMapper) {
+                                TracesModelMapper tracesModelMapper,
+                                ProxyService proxyService) {
         this.tracesService = tracesService;
         this.tracesModelMapper = tracesModelMapper;
+        this.proxyService = proxyService;
     }
 
     @PostMapping(
@@ -33,6 +37,7 @@ public class HttpTracesController {
     public ExportTraceServiceResponse exportTraces(@RequestBody ExportTraceServiceRequest request) {
         log.info("HTTP Traces request: {}", request);
         tracesService.addResourceSpans(request.getResourceSpansList().stream().map(tracesModelMapper::mapResourceSpans).toList());
+        proxyService.forwardTraces(request);
         return ExportTraceServiceResponse.newBuilder()
                 .setPartialSuccess(ExportTracePartialSuccess.newBuilder()
                         .build())

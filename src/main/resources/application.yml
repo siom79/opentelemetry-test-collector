@@ -28,4 +28,6 @@ com:
         metrics:
           cache:
             size: ${METRICS_CACHE_SIZE:1000}
+        proxy:
+          endpoint: ${PROXY_ENDPOINT:}
 
