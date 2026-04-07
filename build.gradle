@@ -84,6 +84,12 @@ tasks.named('test') {
 	finalizedBy jacocoTestReport
 }
 
+test {
+	testLogging {
+		showStandardStreams = true
+	}
+}
+
 jacocoTestReport {
 	dependsOn test
 	reports {
