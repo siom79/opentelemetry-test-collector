@@ -7,8 +7,10 @@ import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestClient;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -34,7 +36,8 @@ class TestcontainersIT {
             .withExposedPorts(4317, 4318)
             .waitingFor(Wait.forHttp("/actuator/health")
                     .forPort(4318)
-                    .forStatusCode(200));
+                    .forStatusCode(200))
+            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("TC")));
 
     private RestClient restClient;
 
