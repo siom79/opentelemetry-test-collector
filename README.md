@@ -50,6 +50,7 @@ The following environment variables can be set:
 | GRPC_SERVER_PORT     | 4317          | Port of the GRPC server                                                     |
 | TRACES_CACHE_SIZE    | 1000          | Size of the traces cache                                                    |
 | METRICS_CACHE_SIZE   | 1000          | Size of the metrics cache                                                   |
+| LOGS_CACHE_SIZE      | 1000          | Size of the logs cache                                                      |
 | PROXY_ENDPOINT       | *(empty)*     | Upstream collector URL. When set, all requests are forwarded to this target |
 
 ### Proxy Mode
@@ -123,6 +124,15 @@ paths:
       responses:
         "200":
           description: The metrics list has been cleared
+  /api/logs/clear:
+    post:
+      tags:
+        - api-logs-controller
+      summary: Clears the list of all captured logs
+      operationId: clear_2
+      responses:
+        "200":
+          description: The list has been cleared
   /api/traces/list:
     get:
       tags:
@@ -153,6 +163,21 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ResourceMetrics"
+  /api/logs/list:
+    get:
+      tags:
+        - api-logs-controller
+      summary: Returns a list of all captured logs
+      operationId: list_2
+      responses:
+        "200":
+          description: Returns the list of logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResourceLogs"
 ```
 
 The OpenAPI document is accessible through the URL `http://localhost:4318/api-docs.yaml`.
@@ -212,6 +237,47 @@ The following one clears the traces cache (e.g. before another test case):
 ```bash
 curl --request POST \
   --url http://localhost:4318/api/traces/clear
+```
+
+The following request returns all captured logs:
+
+```bash
+curl --request GET \
+  --url http://localhost:4318/api/logs/list
+[
+  {
+    "schemaUrl": "",
+    "resource": {
+      ...
+    },
+    "scopeLogs": [
+      {
+        "logRecords": [
+          {
+            "timeUnixNano": 1756412455705140500,
+            "observedTimeUnixNano": 1756412455705140500,
+            "severityNumber": "SEVERITY_NUMBER_INFO",
+            "severityText": "INFO",
+            "body": {
+              "type": "STRING",
+              "stringValue": "Hello, World!"
+            },
+            "attributes": [],
+            "traceId": "405c9c1ce6c77c8830e100f631e0e3bc",
+            "spanId": "60340b8847147a07"
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+The following one clears the logs cache (e.g. before another test case):
+
+```bash
+curl --request POST \
+  --url http://localhost:4318/api/logs/clear
 ```
 
 ### Testcontainers Integration
@@ -294,6 +360,38 @@ void myService_shouldExportGaugeMetric() {
         assertThat(metricList).anySatisfy(m -> {
             Map<?, ?> metric = (Map<?, ?>) m;
             assertThat(metric.get("name")).isEqualTo("my.gauge.metric");
+        });
+    });
+}
+```
+
+#### Example: Verifying Logs
+
+```java
+@Test
+void myService_shouldExportLogRecord() {
+    String collectorBaseUrl = "http://localhost:" + collector.getMappedPort(4318);
+    RestClient restClient = RestClient.create(collectorBaseUrl);
+    restClient.post().uri("/api/logs/clear").retrieve().toBodilessEntity();
+
+    // trigger log output in the application under test
+
+    await().atMost(10, SECONDS).untilAsserted(() -> {
+        List<Map<String, Object>> logs = restClient.get()
+            .uri("/api/logs/list")
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+
+        assertThat(logs).isNotEmpty();
+
+        List<?> scopeLogs = (List<?>) ((Map<?, ?>) logs.getFirst()).get("scopeLogs");
+        List<?> logRecords = (List<?>) ((Map<?, ?>) scopeLogs.getFirst()).get("logRecords");
+
+        assertThat(logRecords).anySatisfy(r -> {
+            Map<?, ?> record = (Map<?, ?>) r;
+            assertThat(record.get("severityNumber")).isEqualTo("SEVERITY_NUMBER_INFO");
+            Map<?, ?> body = (Map<?, ?>) record.get("body");
+            assertThat(body.get("stringValue")).asString().contains("expected message");
         });
     });
 }

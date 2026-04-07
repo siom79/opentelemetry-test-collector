@@ -1,13 +1,8 @@
 package com.github.siom79.opentelemetry.test.collector.core.services;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
-import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
-import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
+import java.net.URI;
+import java.util.List;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -16,8 +11,16 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.util.List;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
+import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -34,6 +37,7 @@ public class ProxyService implements DisposableBean {
     private ManagedChannel grpcChannel;
     private TraceServiceGrpc.TraceServiceBlockingStub traceStub;
     private MetricsServiceGrpc.MetricsServiceBlockingStub metricsStub;
+    private LogsServiceGrpc.LogsServiceBlockingStub logsStub;
 
     @PostConstruct
     void init() {
@@ -50,6 +54,7 @@ public class ProxyService implements DisposableBean {
             grpcChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             traceStub = TraceServiceGrpc.newBlockingStub(grpcChannel);
             metricsStub = MetricsServiceGrpc.newBlockingStub(grpcChannel);
+            logsStub = LogsServiceGrpc.newBlockingStub(grpcChannel);
             log.info("Proxy enabled (gRPC): {}:{}", host, port);
         } else {
             protocol = Protocol.HTTP;
@@ -96,6 +101,24 @@ public class ProxyService implements DisposableBean {
             log.debug("Proxy: forwarded metrics to {}", endpoint);
         } catch (Exception e) {
             log.warn("Proxy: failed to forward metrics to {}: {}", endpoint, e.getMessage());
+        }
+    }
+
+    public void forwardLogs(ExportLogsServiceRequest request) {
+        if (!isEnabled()) return;
+        try {
+            if (protocol == Protocol.HTTP) {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.parseMediaType("application/x-protobuf"));
+                headers.setAccept(List.of(MediaType.parseMediaType("application/x-protobuf")));
+                HttpEntity<byte[]> entity = new HttpEntity<>(request.toByteArray(), headers);
+                restTemplate.postForObject(httpBaseUrl + "/v1/logs", entity, byte[].class);
+            } else {
+                logsStub.export(request);
+            }
+            log.debug("Proxy: forwarded logs to {}", endpoint);
+        } catch (Exception e) {
+            log.warn("Proxy: failed to forward logs to {}: {}", endpoint, e.getMessage());
         }
     }
 

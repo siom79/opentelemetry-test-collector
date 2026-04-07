@@ -1,12 +1,14 @@
 package com.github.siom79.opentelemetry.test.collector.adapters.otel;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.github.siom79.opentelemetry.test.collector.core.model.common.AnyValue;
 import com.github.siom79.opentelemetry.test.collector.core.model.common.InstrumentationScope;
 import com.github.siom79.opentelemetry.test.collector.core.model.common.KeyValue;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -21,7 +23,7 @@ public class CommonModelMapper {
                 .toList();
     }
 
-    private AnyValue mapAnyValue(io.opentelemetry.proto.common.v1.AnyValue anyValue) {
+    public AnyValue mapAnyValue(io.opentelemetry.proto.common.v1.AnyValue anyValue) {
         if (anyValue.hasBoolValue()) {
             return AnyValue.builder()
                     .type(AnyValue.Type.BOOLEAN)
