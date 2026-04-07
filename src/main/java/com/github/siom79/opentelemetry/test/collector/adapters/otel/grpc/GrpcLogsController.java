@@ -31,7 +31,7 @@ public class GrpcLogsController extends LogsServiceGrpc.LogsServiceImplBase {
 
     @Override
     public void export(ExportLogsServiceRequest request, StreamObserver<ExportLogsServiceResponse> responseObserver) {
-        log.info("GRPC Logs Request: {}", request);
+        log.debug("GRPC Logs Request: {}", request);
         logsService.addResourceLogs(request.getResourceLogsList().stream().map(logsModelMapper::mapResourceLogs).toList());
         proxyService.forwardLogs(request);
         ExportLogsServiceResponse response = ExportLogsServiceResponse.newBuilder()

@@ -37,7 +37,7 @@ public class HttpLogsController {
             produces = "application/x-protobuf"
     )
     public ExportLogsServiceResponse exportLogs(@RequestBody ExportLogsServiceRequest request) {
-        log.info("HTTP Logs request: {}", request);
+        log.debug("HTTP Logs request: {}", request);
         logsService.addResourceLogs(request.getResourceLogsList().stream().map(logsModelMapper::mapResourceLogs).toList());
         proxyService.forwardLogs(request);
         return ExportLogsServiceResponse.newBuilder()
