@@ -40,7 +40,7 @@ class TestcontainersIT {
 
     @BeforeEach
     void setUp() {
-        String baseUrl = "http://localhost:" + collector.getMappedPort(4318);
+        String baseUrl = "http://" + collector.getHost() + ":" + collector.getMappedPort(4318);
         restClient = RestClient.create(baseUrl);
         restClient.post().uri("/api/traces/clear").retrieve().toBodilessEntity();
         restClient.post().uri("/api/metrics/clear").retrieve().toBodilessEntity();
@@ -48,7 +48,7 @@ class TestcontainersIT {
 
     @Test
     void exportedTrace_isAccessibleViaRestApi() {
-        String collectorBaseUrl = "http://localhost:" + collector.getMappedPort(4318);
+        String collectorBaseUrl = "http://" + collector.getHost() + ":" + collector.getMappedPort(4318);
         OtlpHttpSpanExporter exporter = OtlpHttpSpanExporter.builder()
                 .setEndpoint(collectorBaseUrl + "/v1/traces")
                 .build();
@@ -82,7 +82,7 @@ class TestcontainersIT {
 
     @Test
     void exportedMetric_isAccessibleViaRestApi() {
-        String collectorBaseUrl = "http://localhost:" + collector.getMappedPort(4318);
+        String collectorBaseUrl = "http://" + collector.getHost() + ":" + collector.getMappedPort(4318);
         OtlpHttpMetricExporter exporter = OtlpHttpMetricExporter.builder()
                 .setEndpoint(collectorBaseUrl + "/v1/metrics")
                 .build();

@@ -54,7 +54,7 @@ class ProxyIT {
     static void configureProxy(DynamicPropertyRegistry registry) {
         registry.add(
                 "com.github.siom79.opentelemetry-test-collector.proxy.endpoint",
-                () -> "http://localhost:" + backendCollector.getMappedPort(4318));
+                () -> "http://" + backendCollector.getHost() + ":" + backendCollector.getMappedPort(4318));
     }
 
     @LocalServerPort
