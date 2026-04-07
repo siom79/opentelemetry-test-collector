@@ -2,7 +2,6 @@ package com.github.siom79.opentelemetry.test.collector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
@@ -35,8 +34,7 @@ class TestcontainersIT {
             .withExposedPorts(4317, 4318)
             .waitingFor(Wait.forHttp("/actuator/health")
                     .forPort(4318)
-                    .forStatusCode(200)
-                    .withStartupTimeout(Duration.ofMinutes(3)));
+                    .forStatusCode(200));
 
     private RestClient restClient;
 
