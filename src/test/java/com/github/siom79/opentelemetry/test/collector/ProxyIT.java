@@ -1,18 +1,10 @@
 package com.github.siom79.opentelemetry.test.collector;
 
-import com.github.siom79.opentelemetry.test.collector.core.services.MetricsService;
-import com.github.siom79.opentelemetry.test.collector.core.services.TracesService;
-import io.opentelemetry.api.metrics.DoubleGauge;
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
-import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,9 +19,20 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.concurrent.TimeUnit;
+import com.github.siom79.opentelemetry.test.collector.core.services.MetricsService;
+import com.github.siom79.opentelemetry.test.collector.core.services.TracesService;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import io.opentelemetry.api.metrics.DoubleGauge;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 
 /**
  * Verifies the proxy feature: requests sent to the frontend collector (the app
@@ -46,7 +49,8 @@ class ProxyIT {
             .withExposedPorts(4317, 4318)
             .waitingFor(Wait.forHttp("/actuator/health")
                     .forPort(4318)
-                    .forStatusCode(200));
+                    .forStatusCode(200)
+                    .withStartupTimeout(Duration.ofMinutes(3)));
 
     @DynamicPropertySource
     static void configureProxy(DynamicPropertyRegistry registry) {
